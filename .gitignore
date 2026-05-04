@@ -1,5 +1,6 @@
 # API key — 绝不提交
 .api_key
+.seedance_api_key
 *.key
 .env
 .env.*
@@ -11,6 +12,9 @@ outputs/
 *.jpeg
 *.webp
 *.gif
+*.mp4
+*.mov
+*.webm
 
 # Python
 __pycache__/
