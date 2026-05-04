@@ -44,6 +44,7 @@ git clone https://github.com/yangyixxxx/gptnb-image.git ~/.newmax/skills/gptnb-i
 
 1. 前往 [https://oneapi.gptnb.ai](https://oneapi.gptnb.ai) **注册账号并充值**
 2. 在「**令牌 / API Keys**」页新建一个令牌，复制以 `sk-` 开头的字符串
+   > ⚠️ **激活令牌时务必选「api」分组**（不要用默认或其它分组），api 分组上游更稳，超时/限流明显少。
 3. 任选一种方式配置：
 
    **方式 A：写入用户配置文件（推荐，持久化）**

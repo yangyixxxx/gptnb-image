@@ -67,9 +67,9 @@ python3 scripts/generate.py \
 
 三者都没有时，脚本会以非零退出码报错并打印引导文案，提示用户：
 
-> 前往 https://oneapi.gptnb.ai 注册账号并充值 → 在「令牌 / API Keys」页新建令牌 → 写入 `~/.newmax/skills/gptnb-image/.api_key` 或 `export GPTNB_API_KEY=...`
+> 前往 https://oneapi.gptnb.ai 注册账号并充值 → 在「令牌 / API Keys」页新建令牌 → **激活时务必选「api」分组**（更稳，超时/限流少）→ 写入 `~/.newmax/skills/gptnb-image/.api_key` 或 `export GPTNB_API_KEY=...`
 
-首次使用时如果出现该提示，直接把上述链接和步骤转告用户，不要尝试伪造 key 继续调用。
+首次使用时如果出现该提示，直接把上述链接和步骤转告用户，**特别要提醒选 api 分组**，不要尝试伪造 key 继续调用。
 
 ```bash
 # 一次性配置
