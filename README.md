@@ -2,23 +2,32 @@
 
 [牛马AI](https://niuma.limyai.com) 的**图像 & 视频**生成技能（skill），基于 [gptnb.ai](https://oneapi.gptnb.ai) 中转。一个 skill 同时承载两条管道：
 
-- **图像生成**：`gpt-image-2` / `gpt-image-2-vip`（分层）/ `dall-e-3` 等
-- **视频生成**：`seedance 2.0` / `2.0 fast` / `1.5 pro` / `1.0` 系列（doubao-seedance）
+- **图像**：`gpt-image-2` / `gpt-image-2-vip`（分层）/ `dall-e-3` 等
+- **视频**：`seedance 2.0` / `2.0 fast` / `1.5 pro` / `1.0` 系列（doubao-seedance）
 
-## 能干什么
+## 目录
 
-### 图像
-- **普通生图**：单张图像生成（`gpt-image-2` / `dall-e-3` 等）
-- **海报分层（文生）**：`gpt-image-2-vip` 一次调用同时返回**完整海报 + 各元素分层 PNG**，适合"先出海报，再把每个元素拆成独立图"的场景
-- **海报分层（上传）**：上传你已经有的海报 / 插画，vip 模型按元素拆成多张透明背景 PNG（走 `/v1/images/edits` 端点）
-- 自动下载图片到工作目录的 `outputs/gptnb-image/` 下
+- [能力一览](#能力一览)
+- [在牛马AI 里使用](#在牛马ai-里使用)
+- [安装](#安装)
+- [命令行直接用](#命令行直接用不通过牛马ai)
+- [参数说明](#参数说明)
+- [错误排查](#错误排查)
 
-### 视频
-- **文生视频**：纯 prompt 出 5~15 秒视频
-- **图生视频**：单图生成（首帧）/ 双图生成（首尾帧过渡）
-- **多模态参考视频**：1~9 张参考图 + 0~3 段参考视频 + 0~3 段参考音频，组合输出 1 个视频（仅 seedance 2.0 / 2.0 fast）
-- **同步音频**：seedance 2.0 / 1.5 pro 默认同时生成同步音频（人声、音效、BGM）
-- 异步任务流自动处理（提交 → 轮询 → 下载 mp4 到 `outputs/seedance/`）
+## 能力一览
+
+| 能力 | 触发关键词 / 用法 | 端点 | 脚本 |
+|------|------------------|------|------|
+| 普通生图 | "画一张..." | `/v1/images/generations` | `generate.py` |
+| 文生 + 分层 | "生成 X 海报，把每个元素拆开" | `/v1/images/generations` (vip) | `generate.py --model gpt-image-2-vip` |
+| **上传图分层** ⭐ | 上传图 + "把这张图拆成图层" | `/v1/images/edits` (vip + multipart) | `generate.py --model gpt-image-2-vip --input-image <file>` |
+| 文生视频 | "做一段 5 秒的视频..." | seedance create task | `seedance.py --prompt ...` |
+| 图生视频 | 上传图 + "让它动起来" | seedance create task | `seedance.py --first-frame ...` |
+| 首尾帧视频 | 上传两张 + "从 A 到 B" | seedance create task | `seedance.py --first-frame ... --last-frame ...` |
+| 参考图视频 | 多张参考图 + "合成一段视频" | seedance create task (2.0+) | `seedance.py --reference-image ...` |
+| 同步音频视频 | "带配音 / 带 BGM" | seedance create task (2.0/1.5) | `seedance.py --generate-audio true` |
+
+> ⭐ **新功能**：上传图分层，把你已经做好的海报/插画交给 vip 模型按元素拆成透明背景 PNG，不用让模型重新画一遍。
 
 ## 在牛马AI 里使用
 
