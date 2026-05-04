@@ -5,7 +5,7 @@ description: "Generate images via gptnb.ai using gpt-image-2 / gpt-image-2-vip (
 
 # gptnb 图像生成
 
-通过 `https://api.gptnb.ai/v1/images/generations` 调用 gpt-image-2 系列生成图像。脚本兼容 OpenAI 经典 image generation 接口风格。
+通过 `https://one-cn2.gptnb.ai/v1/images/generations` 调用 gpt-image-2 系列生成图像。脚本兼容 OpenAI 经典 image generation 接口风格。如需切换上游可用 `GPTNB_API_URL` 环境变量或 `--api-url` 参数覆盖。
 
 ## 决策规则（最重要）
 
