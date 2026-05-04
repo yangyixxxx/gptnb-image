@@ -22,12 +22,32 @@ skill 同时承载两条管道，按用户意图分流：
 
 ## 决策规则（最重要）
 
+vip（分层）有两种用法，按用户是否提供已有图区分：
+
+### A. 文生 + 同步分层（用户没给图，让你生成 + 拆）
+
 **只要用户提到"分层 / 拆分 / 拆开 / 每个元素一张 / 图层 / layered / split"等关键词，无论是否同时要求"先生成海报"，都只发一次 `gpt-image-2-vip` 调用**，把"生成 + 拆分"写进同一个 prompt，由 vip 模型一次性返回合成图 + 各元素分层图。
 
 - ❌ 错误：先用 `gpt-image-2` 生成海报，再用 `gpt-image-2-vip` 分层（两次调用，且第二次无法读到第一次的像素，结果对不齐）
 - ✅ 正确：直接一次 `gpt-image-2-vip`，prompt 写成"帮我生成 X 海报，然后把生成的海报拆分成若干图像，每个元素独立拆分开，不要改变相对位置"
 
-vip 模型本身就是「生成 + 同源分层」的复合模型，所有图层来自它内部生成的同一张主图，必须信任它一次出全部产物。
+### B. 上传图分层（用户已经有海报/插画，让你拆）
+
+**用户上传一张图（说"把这张图分层 / 拆开 / 拆成图层 / 把每个元素拆出来"等）→ 用 `--input-image` 走 `/v1/images/edits` 端点**。脚本会自动 multipart 上传图片字节。
+
+```bash
+python3 scripts/generate.py \
+  --model gpt-image-2-vip \
+  --input-image /path/to/user-uploaded.png \
+  --prompt "把这张图按元素拆分成若干透明背景的 PNG 图层，相对位置不变"
+```
+
+`--prompt` 在该模式下可省略，脚本默认用"按元素拆分、保持相对位置"的模板。
+
+### 总判断
+- 用户说"生成 X 海报，分层"→ A（文生 + 分层）
+- 用户上传图 + 说"分层/拆开"→ B（edits 上传分层）
+- 用户上传图但没说分层 → 默认走 edits 编辑模式（不带 vip）
 
 ## 模型
 
@@ -43,13 +63,22 @@ vip 模型本身就是「生成 + 同源分层」的复合模型，所有图层�
 python3 scripts/generate.py --prompt "一只在月光下奔跑的银狐" --size 1536x1024 --quality high
 ```
 
-vip 分层模型（自动产出多张元素图）：
+vip 分层模型（文生 + 分层，自动产出多张元素图）：
 
 ```bash
 python3 scripts/generate.py \
   --model gpt-image-2-vip \
   --prompt "蜜雪冰城和疯狂星期四的联名营销活动宣传海报，把海报拆分成若干图像，每个元素独立拆分开，不要改变相对位置" \
   --size auto
+```
+
+vip 上传图分层（用户已有海报/插画，让你拆）：
+
+```bash
+python3 scripts/generate.py \
+  --model gpt-image-2-vip \
+  --input-image /Users/me/Downloads/poster.png
+# --prompt 不传时使用默认模板：把这张图按元素拆分成若干透明背景 PNG 图层
 ```
 
 返回的 `data` 数组里每个 url 都会被下载，文件名 `<prefix>-<时间戳>-<序号>.png`。
@@ -66,6 +95,7 @@ python3 scripts/generate.py \
 - `--output-dir` 默认 `outputs/gptnb-image/`
 - `--prefix` 文件名前缀，默认 `gptnb`
 - `--raw` 只打印 API 原始 JSON，不下载图片
+- `--input-image` 本地图片路径，传入后**自动切到 `/v1/images/edits` 端点**（multipart 上传）。可重复传多张。搭配 vip 模型即"上传图分层"
 - `--api-key` 单次覆盖；优先级：CLI > `GPTNB_API_KEY` > `~/.newmax/skills/gptnb-image/.api_key`，详见下方「API Key 配置」
 
 脚本本地校验 `size` 是否满足约束（16 倍数 / 最长边 ≤ 3840 / 长短比 ≤ 3:1 / 总像素 655,360–8,294,400），不合法直接报错，不打 API。`size=auto` 跳过校验。

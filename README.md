@@ -9,7 +9,8 @@
 
 ### 图像
 - **普通生图**：单张图像生成（`gpt-image-2` / `dall-e-3` 等）
-- **海报分层**：`gpt-image-2-vip` 一次调用同时返回**完整海报 + 各元素分层 PNG**，适合"先出海报，再把每个元素拆成独立图"的场景
+- **海报分层（文生）**：`gpt-image-2-vip` 一次调用同时返回**完整海报 + 各元素分层 PNG**，适合"先出海报，再把每个元素拆成独立图"的场景
+- **海报分层（上传）**：上传你已经有的海报 / 插画，vip 模型按元素拆成多张透明背景 PNG（走 `/v1/images/edits` 端点）
 - 自动下载图片到工作目录的 `outputs/gptnb-image/` 下
 
 ### 视频
@@ -26,6 +27,10 @@
 **生图：**
 
 > 帮我生成一张蜜雪冰城和疯狂星期四的联名营销活动宣传海报，然后把生成的海报拆分成若干图像，每个元素一个独立拆分开，不要改变相对位置
+
+**上传海报分层：**
+
+> 我刚做好一张海报（拖入图片），帮我把这张图的每个元素拆成独立透明 PNG 图层
 
 **生视频：**
 
@@ -113,11 +118,17 @@ git clone https://github.com/yangyixxxx/gptnb-image.git ~/.newmax/skills/gptnb-i
 # 普通生图
 python3 scripts/generate.py --prompt "一只在月光下奔跑的银狐" --size 1536x1024 --quality high
 
-# 分层模型（一次返回多张元素图）
+# 文生 + 分层（一次调用返回完整海报 + 各元素 PNG）
 python3 scripts/generate.py \
   --model gpt-image-2-vip \
   --prompt "蜜雪冰城和疯狂星期四的联名营销活动宣传海报，把海报拆分成若干图像，每个元素独立拆分开，不要改变相对位置" \
   --size auto
+
+# 上传图分层（vip 把已有海报/插画按元素拆成透明 PNG 图层）
+python3 scripts/generate.py \
+  --model gpt-image-2-vip \
+  --input-image /path/to/poster.png
+# --prompt 可省略，默认用"按元素拆分、保持相对位置"模板
 ```
 
 ### 视频
@@ -151,8 +162,9 @@ python3 scripts/seedance.py --task-id <ID>
 
 | 参数 | 说明 | 默认 |
 |------|------|------|
-| `--prompt` | 图像描述（**必填**） | — |
+| `--prompt` | 图像描述（生成模式必填；"上传图 + vip 分层"可省略，用默认拆分模板） | — |
 | `--model` | 模型名（含 `vip` 自动切到分层协议） | `gpt-image-2` |
+| `--input-image` | 上传本地图（multipart），传入后自动走 `/v1/images/edits` 端点；可重复传多张 | — |
 | `--n` | 生成张数（1-10） | `1`（vip 模式忽略） |
 | `--size` | `WIDTHxHEIGHT` 或 `auto` | `auto` |
 | `--quality` | `low` / `medium` / `high` / `auto` | `auto`（vip 模式忽略） |
